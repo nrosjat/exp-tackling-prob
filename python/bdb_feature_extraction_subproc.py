@@ -753,28 +753,29 @@ total_tackles = (predict_df.groupby(['gameId', 'playId', 'displayName'])['att_ta
 
 # Calculate the mean tackle_prob for the first 10 frames of each play
 mean_pred_tackles_first_10_frames = (predict_df[predict_df['frameId'] <= 15]
-                                     .groupby(['gameId', 'playId', 'displayName'])['tackle_binary']
-                                     .mean()
-                                     .reset_index()
-                                     .groupby('displayName')['tackle_binary']
-                                     .mean())
+                                    .groupby(['gameId', 'playId', 'displayName'])['tackle_binary']
+                                    .mean()  # Calculate the mean tackle_prob per group
+                                    .reset_index()  # Flatten the multi-index into columns
+                                    .groupby('displayName')['tackle_binary']
+                                    .sum())  # Sum up the mean probabilities per player across plays
 
 # Calculate the mean tackle_prob over the whole play and adjust by att_tackle
-mean_pred_tackles_whole_play = (predict_df.groupby(['gameId', 'playId', 'displayName'])
-                                .mean()
-                                .reset_index()
-                                .groupby('displayName')['tackle_binary']
-                                .mean())
+mean_tackle_prob_whole_play = (predict_df
+                                    .groupby(['gameId', 'playId', 'displayName'])['tackle_binary']
+                                    .mean()  # Calculate the mean tackle_prob per group
+                                    .reset_index()  # Flatten the multi-index into columns
+                                    .groupby('displayName')['tackle_binary']
+                                    .sum())  # Sum up the mean probabilities per player across plays
 
 # Calculate the differences between actual tackles and mean predicted tackles
-difference_first_10_frames = total_tackles - mean_pred_tackles_first_10_frames * total_tackles.groupby('displayName').count()
-difference_whole_play = total_tackles - mean_pred_tackles_whole_play * total_tackles.groupby('displayName').count()
+difference_first_10_frames = total_tackles - mean_pred_tackles_first_10_frames
+difference_whole_play = total_tackles - mean_tackle_prob_whole_play
 
 # Combine the results into one dataframe for a comprehensive view
 results_df = pd.DataFrame({
     'Total Tackles': total_tackles,
     'Mean Predicted Tackles First 10 Frames': mean_pred_tackles_first_10_frames,
-    'Mean Predicted Tackles Whole Play': mean_pred_tackles_whole_play,
+    'Mean Predicted Tackles Whole Play': mean_tackle_prob_whole_play,
     'Difference First 10 Frames': difference_first_10_frames,
     'Difference Whole Play': difference_whole_play
 }).fillna(0).reset_index()  # Fill NA values with 0
