@@ -233,3 +233,41 @@ def plot_scatter(df, x_variable, y_variable,  save_path, scale_variable=None):
     # Save the figure
     plt.savefig(save_path, format='png')
     plt.close()
+
+def plot_top_players_by_probability_increase_pct(df, save_path):
+    # Scale 'Probability Increase' to percentage
+    df['Probability Increase Pct'] = df['Probability Increase'] * 100
+
+    # Get the top 10 players by 'Probability Increase' percentage
+    top_players_by_increase_pct = df.nlargest(10, 'Probability Increase Pct')
+
+    # Set up the matplotlib figure
+    plt.figure(figsize=(14, 7))
+
+    # Create a barplot
+    sns.barplot(
+        data=top_players_by_increase_pct, 
+        x='displayName', 
+        y='Probability Increase Pct', 
+        palette='Spectral', 
+        hue='Number of Plays', 
+        dodge=False
+    )
+
+    # Add the legend outside the plot
+    plt.legend(title='Number of Plays', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Set the title and labels
+    plt.title('Top 10 Players by Probability Increase (%) Colored by Number of Plays')
+    plt.xlabel('Player Name')
+    plt.ylabel('Probability Increase (%)')
+
+    # Rotate x labels for better readability
+    plt.xticks(rotation=45, ha='right')
+
+    # Adjust layout to make room for the legend
+    plt.tight_layout()
+
+    # Save the figure
+    plt.savefig(save_path, format='png')
+    plt.close()

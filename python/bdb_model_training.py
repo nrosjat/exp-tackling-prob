@@ -100,9 +100,6 @@ for filename in os.listdir('data'):
         # Load the file into a dataframe
         df = pd.read_csv(file_path)
         
-        if 'LS1' in df.columns:
-            print('Long Snapper Alarm!')
-        
         # Add a column to store the week number
         df['week'] = week
         
@@ -283,7 +280,6 @@ dtest = xgb.DMatrix(X_test, label=y_test)
 
 y_test_pred = bst.predict(dtest)
 y_test_pred = [1 if p > 0.5 else 0 for p in y_test_pred]
-y_test_pred2 = [1 if p > 0.6 else 0 for p in y_test_pred]
 
 # Convert training data to DMatrix format for XGBoost
 dtest_first = xgb.DMatrix(X_test_first, label=y_test_first)
@@ -318,9 +314,9 @@ print(f"Precision on training data: {precision_train:.4f}")
 print(f"F1-Score on training data: {f1_train:.4f}")
 print(f"ROC-AUC on training data: {roc_auc_train:.4f}")
 
-precision_test = precision_score(y_test, y_test_pred2)
-f1_test = f1_score(y_test, y_test_pred2)
-roc_auc_test = roc_auc_score(y_test, y_test_pred2)
+precision_test = precision_score(y_test, y_test_pred)
+f1_test = f1_score(y_test, y_test_pred)
+roc_auc_test = roc_auc_score(y_test, y_test_pred)
 
 print(f"Precision on test data: {precision_test:.4f}")
 print(f"F1-Score on test data: {f1_test:.4f}")

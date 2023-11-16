@@ -78,7 +78,7 @@ results_df = pd.DataFrame({
     'Mean Predicted Tackles Whole Play': mean_tackle_prob_whole_play,
     'Difference First 10 Frames': difference_first_10_frames,
     'Difference Whole Play': difference_whole_play,
-    'Probability Increas': sum_changes_series
+    'Probability Increase': sum_changes_series
 }).fillna(0).reset_index()  # Fill NA values with 0
 
 results_df.to_excel('results_output.xlsx')
