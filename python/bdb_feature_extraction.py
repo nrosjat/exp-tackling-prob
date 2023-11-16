@@ -9,10 +9,8 @@ import pandas as pd
 import numpy as np
 import re
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy.spatial.distance import cdist
-from bdb_functions import count_players, calculate_deviation, compute_speeds, compute_mean_distances, get_dist
+from bdb_functions import count_players, calculate_deviation, compute_speeds, compute_mean_distances, get_dist, get_unique_name, rename_file, correct_mislabeled_positions
 
 project_dir = 'data'
 os.listdir(project_dir)
@@ -187,5 +185,63 @@ for file in reoriented_tracking_datafile:
         merged_df.to_csv(fname)
         print('Finished file ' + file)
 
-offense_positions = ['QB', 'WR', 'TE', 'RB', 'FB', 'T', 'G', 'C', 'LS']
+offense_positions = ['QB', 'WR', 'TE', 'RB', 'FB', 'T', 'G', 'C']
 defense_positions = ['DT', 'DE', 'CB', 'SS', 'FS', 'ILB', 'OLB', 'MLB', 'NT', 'DB']
+
+# Get list of all files in 'data' subfolder ending with 'features.csv'
+file_list = [f for f in os.listdir('data') if f.endswith('feature.csv')]
+
+for file in file_list:
+    fname_new = os.path.join('data', rename_file(file))
+    
+    if not os.path.isfile(fname_new):
+        df = pd.read_csv(os.path.join('data', file))
+        
+        # Remove first 4 and last 5 frames for each play in each game
+        to_remove = df.groupby(['gameId', 'playId']).apply(lambda x: x.head(4).index.append(x.tail(5).index))
+        df = df.drop(index=to_remove.explode().values)
+        
+        # Group by gameId and playId and apply the correction function
+        df = df.groupby(['gameId', 'playId']).apply(correct_mislabeled_positions).reset_index(drop=True)
+    
+        # Create Off, Def, Off_speed and Def_speed columns initialized with NaN
+        for i in range(1, 12):
+            df[f'Off{i}'] = np.nan
+            df[f'Def{i}'] = np.nan
+            df[f'Off_speed{i}'] = np.nan
+            df[f'Def_speed{i}'] = np.nan
+    
+        # Loop over each row
+        for index, row in df.iterrows():
+            i, j, k, l = 1, 1, 1, 1
+            for col in df.columns:
+                if any(re.match(f"^{pos}\d+$", col) for pos in offense_positions) and not pd.isna(row[col]):
+                    df.at[index, f'Off{i}'] = row[col]
+                    i += 1
+                elif any(re.match(f"^{pos}\d+$", col) for pos in defense_positions) and not pd.isna(row[col]):
+                    df.at[index, f'Def{j}'] = row[col]
+                    j += 1
+                elif any(re.match(f"^{pos}\d+_speed$", col) for pos in offense_positions) and not pd.isna(row[col]):
+                    df.at[index, f'Off_speed{k}'] = row[col]
+                    k += 1
+                elif any(re.match(f"^{pos}\d+_speed$", col) for pos in defense_positions) and not pd.isna(row[col]):
+                    df.at[index, f'Def_speed{l}'] = row[col]
+                    l += 1
+    
+        # Drop the original columns
+        cols_to_drop = [col for col in df.columns if any(re.match(f"^{pos}\d+$", col) or re.match(f"^{pos}\d+_speed$", col) for pos in offense_positions + defense_positions)]
+        cols_to_drop += ['time','playDirection','a','dis','o','dir','pos_unique', 'is_ballcarrier','ballcarrier_x','ballcarrier_y']
+        df = df.drop(columns=cols_to_drop)
+    
+        # Reorder columns
+        cols_order = [f'Off{i}' for i in range(1, 12)] + [f'Def{i}' for i in range(1, 12)] + [f'Off_speed{i}' for i in range(1, 12)] + [f'Def_speed{i}' for i in range(1, 12)]
+        remaining_cols = [col for col in df.columns if col not in cols_order]
+        df = df[remaining_cols + cols_order]
+        df = df[(df.club != df.possessionTeam) & (df.frameId > 4) & (df.displayName != 'football')]
+        cols_to_drop2 = ['Unnamed: 0.1','Unnamed: 0','jerseyNumber','club','event','position','tackle', 'assist','forcedFumble','pff_missedTackle','possessionTeam']
+        df = df.drop(columns=cols_to_drop2)
+        
+        df.to_csv(fname_new,index=False)
+    else:
+        print('File already exists!')
+
