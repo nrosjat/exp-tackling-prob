@@ -12,7 +12,7 @@ def run_script(script_name):
     subprocess.run(['python', script_name])
 
 if __name__ == "__main__":
-    scripts_to_run = ['bdb_feature_extraction.py', 'bdb_model_training.py', 'bdb_analytics.py', 'bdb_plots.py']
+    scripts_to_run = ['bdb_feature_extraction.py', 'bdb_model_training.py', 'bdb_analytics.py']
 
     for script in scripts_to_run:
         run_script(script)
