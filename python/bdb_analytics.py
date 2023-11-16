@@ -54,6 +54,16 @@ last_frame.rename(columns={'frameId': 'last_frameId'}, inplace=True)
 # Merge last_frame with predict_df
 predict_df_merged = predict_df.merge(last_frame, on=['gameId', 'playId'])
 
+# Calculate the mean tackle_prob for the first 10 frames of each play
+mean_pred_tackles_last_10_frames = (predict_df_merged[predict_df_merged['frameId'] >= predict_df_merged['last_frameId']-10]
+                                    .groupby(['gameId', 'playId', 'displayName'])['tackle_binary']
+                                    .mean()  # Calculate the mean tackle_prob per group
+                                    .reset_index()  # Flatten the multi-index into columns
+                                    .groupby('displayName')['tackle_binary']
+                                    .sum())  # Sum up the mean probabilities per player across plays
+
+difference_last_10_frames = total_tackles - mean_pred_tackles_last_10_frames
+
 # Calculate the mean tackle probability at the end of the play (using last 5 frames)
 mean_end = mean_probability(predict_df_merged, 'last_frameId', -4, 0)
 
@@ -75,10 +85,12 @@ results_df = pd.DataFrame({
     'Number of Plays': plays_count,
     'Total Tackles': total_tackles,
     'Mean Predicted Tackles First 10 Frames': mean_pred_tackles_first_10_frames,
+    'Mean Predicted Tackles Last 10 Frames': mean_pred_tackles_last_10_frames,
     'Mean Predicted Tackles Whole Play': mean_tackle_prob_whole_play,
     'Difference First 10 Frames': difference_first_10_frames,
+    'Difference Last 10 Frames': difference_last_10_frames,
     'Difference Whole Play': difference_whole_play,
     'Probability Increase': sum_changes_series
 }).fillna(0).reset_index()  # Fill NA values with 0
 
-results_df.to_excel('results_output.xlsx')
+results_df.to_excel('results_output.xlsx', index=False)
