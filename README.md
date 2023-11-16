@@ -1,7 +1,7 @@
 # Analyzing Tackling Probabilities - Big Data Bowl 2024
 Repo for the NFL Big Data Bowl 2024 competition
 
-To use this repository, you need to have downloaded the 2024 NFL Big Data Bowl tracking data from [kaggle.com](https://www.kaggle.com/competitions/nfl-big-data-bowl-2024/).
+To use this repository, you need to have downloaded the 2024 NFL Big Data Bowl tracking data from [kaggle.com](https://www.kaggle.com/competitions/nfl-big-data-bowl-2024/) and placed in a `data` subfolder.
 
 The repository contains the following steps:
 
