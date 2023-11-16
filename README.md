@@ -27,8 +27,10 @@ This function creates a output spreadsheet consisting of several entries:
 - `displayName`: Defender Name
 - `Total Tackles`: Actual total tackles (sum of solo and assisted tackles)
 - `Mean Predicted Tackles First 10 Frames`: Number of predicted tackles defined from the mean probability throughout the first 10 frames (i.e. first second)
+- `Mean Predicted Tackles Last 10 Frames`: Number of predicted tackles defined from the mean probability throughout the last 10 frames (i.e. last second)
 - `Mean Predicted Tackles Whole Play`: Number of predicted tackles defined from the mean probability throughout the whole play
 - `Difference First 10 Frames`: Difference of actual tackles compared with predicted tackles first 10 frames
+- `Difference Last 10 Frames`: Difference of actual tackles compared with predicted tackles last 10 frames
 - `Difference Whole Play`: Difference of actual tackles compared with predicted tackles whole play
 - `Probability Increase`: Sum of probability increase comparing the tackling probability in first 0.5 seconds with the tackling probability at the last 0.5 seconds (i.e. which player increased his tackle probability throughout the play)
   
